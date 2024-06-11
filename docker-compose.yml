@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  db:
+    image: bitnami/mysql:8.0.28
+    environment:
+      - MYSQL_PASSWORD=cms_api
+      - MYSQL_USER=cms_api
+      - MYSQL_DATABASE=cms_api_test
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - "3306:3306"
+
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=mysql+pymysql://cms_api:cms_api@db:3306/cms_api_test
+      - JWT_SECRET=secret
