@@ -5,7 +5,7 @@ from ..models import User
 from ..database import get_db
 from ..schemas import UserCreate, Token
 from ..config import settings
-from ..services.auth_service import create_access_token, get_user, get_password_hash
+from ..services.auth_service import create_access_token, get_user, get_password_hash, authenticate_user
 router = APIRouter()
 
 @router.post("/signup", response_model=Token)
@@ -20,4 +20,13 @@ async def signup(user_create: UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
     access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
     access_token = create_access_token(data={"sub": new_user.email}, expires_delta=access_token_expires)
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@router.post("/login", response_model=Token)
+async def login(email: str, password: str, db: Session = Depends(get_db)):
+    user = authenticate_user(db, email=email, password=password)
+    if not user:
+        raise HTTPException(status_code=400, detail="Incorrect email or password")
+    access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
+    access_token = create_access_token(data={"sub": user.email}, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
