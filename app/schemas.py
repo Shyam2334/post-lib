@@ -19,3 +19,16 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     email: str
+
+class PostBase(BaseModel):
+    text: constr(max_length=1024)
+
+class PostCreate(PostBase):
+    pass
+
+class PostInDB(PostBase):
+    id: int
+    user_id: int
+
+    class Config:
+        from_attributes = True
